@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:realm/realm.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class SearchListView<T extends RealmObject> extends StatefulWidget {
   final List<T> objects;
@@ -41,8 +40,10 @@ class _SearchListViewState<T extends RealmObject>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TDInput(
-          hintText: widget.hintText,
+        TextField(
+          decoration: InputDecoration(
+            labelText: widget.hintText,
+          ),
           controller: _controller,
           onSubmitted: (value) {
             _filter(value);

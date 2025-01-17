@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 
-getLocalDisplayTime(DateTime utcTime) {
+String getLocalDisplayTime(DateTime utcTime) {
   // 将UTC时间转换为本地时间
   DateTime localDateTime = utcTime.toLocal();
   // 创建DateFormat对象用于格式化时间，这里设置格式为常见的 yyyy-MM-dd HH:mm:ss

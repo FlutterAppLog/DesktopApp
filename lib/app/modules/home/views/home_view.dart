@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
-
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -16,25 +13,23 @@ class HomeView extends GetView<HomeController> {
       ),
       body: Column(
         children: [
-          TDTabBar(
+          TabBar(
             tabs: const [
-              TDTab(
+              Tab(
                 text: '预览本地日志',
               ),
-              TDTab(
+              Tab(
                 text: '预览线上日志',
               ),
             ],
             controller: controller.tabController,
-            showIndicator: true,
-            backgroundColor: Colors.white,
           ),
           Expanded(
             child: TabBarView(
               controller: controller.tabController,
               children: [
-                Center(child: _buildLocalWidget()),
-                Center(child: _buildOnlineWidget()),
+                _buildLocalWidget(),
+                _buildOnlineWidget(),
               ],
             ),
           )
@@ -50,37 +45,29 @@ class HomeView extends GetView<HomeController> {
           children: [
             Expanded(
               flex: 2,
-              child: TDInput(
-                backgroundColor: Colors.white,
-                hintText: '请输入本地日志路径',
+              child: TextField(
+                decoration: const InputDecoration(labelText: '请输入本地日志路径'),
                 controller: controller.localLogPathController,
                 onChanged: (text) {},
-                onClearTap: () {
-                  controller.localLogPathController.clear();
-                },
               ),
             ),
             Expanded(
               flex: 1,
-              child: TDInput(
-                backgroundColor: Colors.white,
-                hintText: '请输入本地日志密码',
+              child: TextField(
+                decoration: const InputDecoration(labelText: '请输入本地日志密码'),
                 controller: controller.logPasswordController,
                 onChanged: (text) {},
-                onClearTap: () {
-                  controller.logPasswordController.clear();
-                },
               ),
             ),
             const SizedBox(width: 10),
-            TDButton(
-              text: '打开日志文件',
-              onTap: () => controller.openLogFile(),
+            ElevatedButton(
+              child: const Text('打开日志文件'),
+              onPressed: () => controller.openLogFile(),
             ),
             const SizedBox(width: 10),
-            TDButton(
-              text: '选取日志文件',
-              onTap: () => controller.selectLogFile(),
+            ElevatedButton(
+              child: const Text('选取日志文件'),
+              onPressed: () => controller.selectLogFile(),
             ),
             const SizedBox(width: 10),
           ],

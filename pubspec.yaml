@@ -4,18 +4,16 @@ publish_to: none
 description: App日志管理软件
 environment:
   sdk: ^3.5.4
+  flutter: ^3.24.5
 
 dependencies:
   cupertino_icons: ^1.0.8
   get: ^4.6.6
   flutter:
     sdk: flutter
-  tdesign_flutter: ^0.1.8
   file_picker: ^8.1.7
   realm: ^20.0.0
-  intl: ^0.20.1
   appwrite: ^13.1.1
-  fluent_ui: ^1.2.3
 
 dev_dependencies:
   flutter_lints: ^4.0.0

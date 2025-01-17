@@ -10,7 +10,7 @@ void main() {
   runApp(
     GetMaterialApp(
       theme: ThemeData(
-        useMaterial3: false,
+        useMaterial3: true,
       ),
       title: "Application",
       initialRoute: AppPages.INITIAL,

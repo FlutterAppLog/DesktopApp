@@ -4,7 +4,6 @@ import 'package:flutter_app_log_desktop_app/app_log/app_log.dart';
 import 'package:flutter_app_log_desktop_app/commons/functions.dart';
 import 'package:flutter_app_log_desktop_app/widgets/search_list_view.dart';
 import 'package:get/get.dart';
-import 'package:tdesign_flutter/tdesign_flutter.dart';
 
 class LogDetailView extends GetView<LogDetailController> {
   const LogDetailView({super.key});
@@ -18,14 +17,9 @@ class LogDetailView extends GetView<LogDetailController> {
       ),
       body: Column(
         children: [
-          TDTabBar(
+          TabBar(
             tabs: _buildTabs(),
             controller: controller.tabController,
-            backgroundColor: Colors.white,
-            showIndicator: true,
-            onTap: (p0) {
-              controller.loadData(p0);
-            },
           ),
           Expanded(child: _buildTabBarView()),
         ],
@@ -33,11 +27,11 @@ class LogDetailView extends GetView<LogDetailController> {
     );
   }
 
-  List<TDTab> _buildTabs() {
+  List<Tab> _buildTabs() {
     final titles = ['日志详情', '用户详情', 'Sentry ID'];
     return List.generate(
       titles.length,
-      (index) => TDTab(
+      (index) => Tab(
         text: titles[index],
       ),
     );
@@ -60,10 +54,10 @@ class LogDetailView extends GetView<LogDetailController> {
       return SearchListView<AppSentryId>(
         objects: controller.appSentryIds,
         itemBuilder: (context, object) {
-          return TDCell(
-            title: '${getLocalDisplayTime(object.time)}(${object.sentryId})',
-            description: object.title,
-            onClick: (cell) {},
+          return ListTile(
+            title:
+                Text('${getLocalDisplayTime(object.time)}(${object.sentryId})'),
+            subtitle: Text(object.title),
           );
         },
       );
@@ -76,10 +70,9 @@ class LogDetailView extends GetView<LogDetailController> {
       return SearchListView<AppUserId>(
           objects: controller.appUsers,
           itemBuilder: (context, object) {
-            return TDCell(
-              title: getLocalDisplayTime(object.time),
-              description: object.userId,
-              onClick: (cell) {},
+            return ListTile(
+              title: Text(getLocalDisplayTime(object.time)),
+              subtitle: Text(object.userId),
             );
           });
     });
@@ -92,16 +85,14 @@ class LogDetailView extends GetView<LogDetailController> {
         hintText: '搜索日志(${controller.appLogs.length}条)',
         objects: controller.appLogs,
         itemBuilder: (context, object) {
-          final cellStyle = TDCellStyle.cellStyle(context);
-          cellStyle.descriptionStyle = cellStyle.descriptionStyle!.copyWith(
-            color: controller.getLogColor(object.level),
-          );
+          // final cellStyle = TDCellStyle.cellStyle(context);
+          // cellStyle.descriptionStyle = cellStyle.descriptionStyle!.copyWith(
+          //   color: controller.getLogColor(object.level),
+          // );
 
-          return TDCell(
-            title: getLocalDisplayTime(object.time),
-            description: object.message,
-            style: cellStyle,
-            onClick: (cell) {},
+          return ListTile(
+            title: Text(getLocalDisplayTime(object.time)),
+            subtitle: Text(object.message),
           );
         },
       );
