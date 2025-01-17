@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "flutter_app_log_desktop_app",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--dart-define=realm_password=26df8b4dd427d7f710d57a6f8f52cf0868c2358db5189f8e3ada3ac4d4c5fa1820322aa77fc46a91708f5086a777b2e18b7e553daba4d7e298a2070bd25909d1",
+            ]
+        },
+        {
+            "name": "flutter_app_log_desktop_app (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "flutter_app_log_desktop_app (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}
