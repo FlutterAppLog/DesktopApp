@@ -3,7 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  realm
+  isar_flutter_libs
   url_launcher_linux
   window_to_front
 )

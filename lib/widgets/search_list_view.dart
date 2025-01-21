@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:realm/realm.dart';
 
-class SearchListView<T extends RealmObject> extends StatefulWidget {
+class SearchListView<T> extends StatefulWidget {
   final List<T> objects;
   final bool Function(T object)? onFilter;
   final Widget Function(BuildContext context, T object) itemBuilder;
@@ -18,8 +17,7 @@ class SearchListView<T extends RealmObject> extends StatefulWidget {
   State<SearchListView> createState() => _SearchListViewState<T>();
 }
 
-class _SearchListViewState<T extends RealmObject>
-    extends State<SearchListView<T>> {
+class _SearchListViewState<T> extends State<SearchListView<T>> {
   List<T> _displayObjects = [];
   final TextEditingController _controller = TextEditingController();
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app_log_desktop_app/app/modules/server_app_load/controllers/server_app_load_controller.dart';
+import 'package:flutter_app_log_desktop_app/app/modules/server_app_load/views/server_app_load_view.dart';
 import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
 
@@ -39,47 +41,82 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget _buildLocalWidget() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: TextField(
-                decoration: const InputDecoration(labelText: '请输入本地日志路径'),
-                controller: controller.localLogPathController,
-                onChanged: (text) {},
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          TextField(
+            decoration: const InputDecoration(labelText: '请输入本地日志路径'),
+            controller: controller.localLogPathController,
+            onChanged: (text) {},
+          ),
+          // TextField(
+          //   decoration: const InputDecoration(labelText: '请输入本地日志密码'),
+          //   controller: controller.logPasswordController,
+          //   onChanged: (text) {},
+          // ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                ElevatedButton(
+                  child: const Text('打开日志文件'),
+                  onPressed: () => controller.openLogFile(),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  child: const Text('选取日志文件'),
+                  onPressed: () => controller.selectLogFile(),
+                ),
+              ],
             ),
-            Expanded(
-              flex: 1,
-              child: TextField(
-                decoration: const InputDecoration(labelText: '请输入本地日志密码'),
-                controller: controller.logPasswordController,
-                onChanged: (text) {},
-              ),
-            ),
-            const SizedBox(width: 10),
-            ElevatedButton(
-              child: const Text('打开日志文件'),
-              onPressed: () => controller.openLogFile(),
-            ),
-            const SizedBox(width: 10),
-            ElevatedButton(
-              child: const Text('选取日志文件'),
-              onPressed: () => controller.selectLogFile(),
-            ),
-            const SizedBox(width: 10),
-          ],
-        ),
-        const Spacer(),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildOnlineWidget() {
-    return const Center(
-      child: Text('预览线上日志'),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: GetBuilder<HomeController>(
+          builder: (_) => controller.needLogin.value
+              ? _buildLoginWidget()
+              : _buildSearchWidget()),
+    );
+  }
+
+  Widget _buildSearchWidget() {
+    return GetBuilder(
+      builder: (_) {
+        return ServerAppLoadView(
+          onLogout: () => controller.logout(),
+        );
+      },
+      init: controller.serverAppLoadController,
+    );
+  }
+
+  Column _buildLoginWidget() {
+    return Column(
+      children: [
+        TextField(
+          decoration: const InputDecoration(
+            labelText: '请输入邮箱',
+          ),
+          controller: controller.emailController,
+        ),
+        TextField(
+          decoration: const InputDecoration(
+            labelText: '请输入密码',
+          ),
+          controller: controller.passwordController,
+        ),
+        ElevatedButton(
+          onPressed: () => controller.login(),
+          child: const Text('登录'),
+        ),
+      ],
     );
   }
 }

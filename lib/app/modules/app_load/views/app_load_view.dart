@@ -14,17 +14,19 @@ class AppLoadView extends GetView<AppLoadController> {
         title: const Text('App启动列表'),
         centerTitle: true,
       ),
-      body: SearchListView(
-        objects: controller.appLoads,
-        itemBuilder: (context, object) {
-          return ListTile(
-            title: Text('${getLocalDisplayTime(object.time)}(${object.id})'),
-            subtitle: Text(object.deviceId),
-            onTap: () {
-              controller.toAppLoadDetail(object);
-            },
-          );
-        },
+      body: GetBuilder<AppLoadController>(
+        builder: (_) => SearchListView(
+          objects: controller.appLoads,
+          itemBuilder: (context, object) {
+            return ListTile(
+              title: Text('${getLocalDisplayTime(object.time)}(${object.id})'),
+              subtitle: Text(object.deviceId),
+              onTap: () {
+                controller.toAppLoadDetail(object);
+              },
+            );
+          },
+        ),
       ),
     );
   }

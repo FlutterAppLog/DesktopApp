@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_log_desktop_app/app/enums/log_color.dart';
+import 'package:flutter_app_log_desktop_app/enums/log_color.dart';
 import 'package:flutter_app_log_desktop_app/app_log/app_log.dart';
 import 'package:get/get.dart';
-import 'package:realm/realm.dart';
-import 'package:flutter_app_log_desktop_app/utils/realm_utils.dart';
+import 'package:isar/isar.dart';
 
 class LogDetailController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -12,7 +11,7 @@ class LogDetailController extends GetxController
 
   /// 当前APP启动对象
   late AppLoad _appLoad;
-  late Realm _realm;
+  late Isar _isar;
 
   /// 展示日志详情
   final appLogs = <AppLog>[].obs;
@@ -27,18 +26,27 @@ class LogDetailController extends GetxController
   void onInit() {
     tabController = TabController(length: 3, vsync: this);
     _appLoad = Get.arguments['appLoad'];
-    _realm = Get.arguments['realm'];
+    _isar = Get.arguments['isar'];
     super.onInit();
     loadData(0);
   }
 
-  loadData(int index) {
+  loadData(int index) async {
     if (index == 0) {
-      appLogs.value = _realm.queryByAppLoadId<AppLog>(_appLoad);
+      appLogs.value = await _isar.appLogs
+          .filter()
+          .appLoad((e) => e.idEqualTo(_appLoad.id))
+          .findAll();
     } else if (index == 1) {
-      appUsers.value = _realm.queryByAppLoadId<AppUserId>(_appLoad);
+      appUsers.value = await _isar.appUserIds
+          .filter()
+          .appLoad((e) => e.idEqualTo(_appLoad.id))
+          .findAll();
     } else if (index == 2) {
-      appSentryIds.value = _realm.queryByAppLoadId<AppSentryId>(_appLoad);
+      appSentryIds.value = await _isar.appSentryIds
+          .filter()
+          .appLoad((e) => e.idEqualTo(_appLoad.id))
+          .findAll();
     }
     update();
   }

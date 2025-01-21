@@ -1,11 +1,14 @@
-import 'package:realm/realm.dart';
-part 'app_log.realm.dart';
+import 'package:isar/isar.dart';
+part 'app_log.g.dart';
 
 /// App启动
-@RealmModel()
-class _AppLoad {
-  @PrimaryKey()
-  late Uuid id;
+@Collection()
+class AppLoad {
+  /// ISAR 数据库ID
+  Id id = Isar.autoIncrement;
+
+  /// 存储在Appwrite的数据库ID
+  late String appwriteId;
 
   /// App启动时间
   late DateTime time;
@@ -24,10 +27,10 @@ class _AppLoad {
 }
 
 /// App日志
-@RealmModel()
-class _AppLog {
-  @PrimaryKey()
-  late Uuid id;
+@Collection()
+class AppLog {
+  /// ISAR 数据库ID
+  Id id = Isar.autoIncrement;
 
   /// 日志类型
   late String level;
@@ -42,13 +45,12 @@ class _AppLog {
   late bool isSynced;
 
   /// App启动日志
-  late _AppLoad? appLoad;
+  final appLoad = IsarLink<AppLoad>();
 }
 
-@RealmModel()
-class _AppSentryId {
-  @PrimaryKey()
-  late Uuid id;
+@Collection()
+class AppSentryId {
+  Id id = Isar.autoIncrement;
 
   /// Sentry的ID
   late String sentryId;
@@ -56,8 +58,8 @@ class _AppSentryId {
   /// 标题
   late String title;
 
-  /// 日志ID
-  late _AppLoad? appLoad;
+  /// App启动日志
+  final appLoad = IsarLink<AppLoad>();
 
   /// 时间
   late DateTime time;
@@ -66,16 +68,15 @@ class _AppSentryId {
   late bool isSynced;
 }
 
-@RealmModel()
-class _AppUserId {
-  @PrimaryKey()
-  late Uuid id;
+@Collection()
+class AppUserId {
+  Id id = Isar.autoIncrement;
 
   /// 用户ID
   late String userId;
 
-  /// 日志ID
-  late _AppLoad? appLoad;
+  /// App启动日志
+  final appLoad = IsarLink<AppLoad>();
 
   /// 时间
   late DateTime time;

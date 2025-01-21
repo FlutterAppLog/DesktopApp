@@ -6,6 +6,7 @@ abstract class Routes {
   static const HOME = _Paths.HOME;
   static const APP_LOAD = _Paths.APP_LOAD;
   static const LOG_DETAIL = _Paths.LOG_DETAIL;
+  static const SERVER_APP_LOAD = _Paths.SERVER_APP_LOAD;
 }
 
 abstract class _Paths {
@@ -13,4 +14,5 @@ abstract class _Paths {
   static const HOME = '/home';
   static const APP_LOAD = '/app-load';
   static const LOG_DETAIL = '/log-detail';
+  static const SERVER_APP_LOAD = '/server-app-load';
 }

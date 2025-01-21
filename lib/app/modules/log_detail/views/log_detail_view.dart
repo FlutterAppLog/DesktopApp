@@ -20,6 +20,7 @@ class LogDetailView extends GetView<LogDetailController> {
           TabBar(
             tabs: _buildTabs(),
             controller: controller.tabController,
+            onTap: (value) => controller.loadData(value),
           ),
           Expanded(child: _buildTabBarView()),
         ],
@@ -55,9 +56,14 @@ class LogDetailView extends GetView<LogDetailController> {
         objects: controller.appSentryIds,
         itemBuilder: (context, object) {
           return ListTile(
-            title:
-                Text('${getLocalDisplayTime(object.time)}(${object.sentryId})'),
-            subtitle: Text(object.title),
+            title: Text(
+              getLocalDisplayTime(object.time),
+              style: const TextStyle(color: Colors.grey, fontSize: 10),
+            ),
+            subtitle: Text(
+              '[${object.sentryId}]${object.title}',
+              style: const TextStyle(color: Colors.black, fontSize: 14),
+            ),
           );
         },
       );
@@ -85,14 +91,17 @@ class LogDetailView extends GetView<LogDetailController> {
         hintText: '搜索日志(${controller.appLogs.length}条)',
         objects: controller.appLogs,
         itemBuilder: (context, object) {
-          // final cellStyle = TDCellStyle.cellStyle(context);
-          // cellStyle.descriptionStyle = cellStyle.descriptionStyle!.copyWith(
-          //   color: controller.getLogColor(object.level),
-          // );
+          final textColor = controller.getLogColor(object.level);
 
           return ListTile(
-            title: Text(getLocalDisplayTime(object.time)),
-            subtitle: Text(object.message),
+            title: Text(
+              getLocalDisplayTime(object.time),
+              style: const TextStyle(color: Colors.grey, fontSize: 10),
+            ),
+            subtitle: Text(
+              object.message,
+              style: TextStyle(color: textColor, fontSize: 14),
+            ),
           );
         },
       );
