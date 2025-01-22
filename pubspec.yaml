@@ -1,5 +1,5 @@
 name: flutter_app_log_desktop_app
-version: 1.0.0+1
+version: 0.1.0
 publish_to: none
 description: App日志管理软件
 environment:
