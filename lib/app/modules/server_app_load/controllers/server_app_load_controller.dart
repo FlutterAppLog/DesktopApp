@@ -22,16 +22,15 @@ class ServerAppLoadController extends GetxController {
   /// 当前查询出来的App启动事件
   final appLoads = Rxn<List<AppLoad>>();
 
-  late Isar _isar;
-
-  @override
-  onInit() async {
-    super.onInit();
-    _isar = await createDefaultIsar();
-  }
+  Isar? _isar;
 
   /// 进行搜索
   search() async {
+    if (_isar != null) {
+      _isar?.close();
+      _isar = null;
+    }
+    _isar = await createDefaultIsar();
     final key = searchKey.value;
     final searchText = searchController.text;
     if (searchText.isEmpty) {
@@ -68,8 +67,8 @@ class ServerAppLoadController extends GetxController {
     }).toList();
 
     /// 写入数据
-    await _isar.writeTxn(() async {
-      await _isar.appLoads.putAll(appLoads);
+    await _isar?.writeTxn(() async {
+      await _isar?.appLoads.putAll(appLoads);
     });
     this.appLoads.value = appLoads;
     update();
@@ -83,10 +82,10 @@ class ServerAppLoadController extends GetxController {
     showHUD('正在同步数据到本地');
 
     /// 移除数据库之前的数据
-    await _isar.writeTxn(() async {
-      await _isar.appSentryIds.clear();
-      await _isar.appUserIds.clear();
-      await _isar.appLogs.clear();
+    await _isar?.writeTxn(() async {
+      await _isar?.appSentryIds.clear();
+      await _isar?.appUserIds.clear();
+      await _isar?.appLogs.clear();
     });
     final userIds = _appwriteClient.queryUserByAppLoad(object.appwriteId);
     final logs = _appwriteClient.queryLogsByAppLoad(object.appwriteId);
@@ -99,7 +98,7 @@ class ServerAppLoadController extends GetxController {
       throw e;
     });
 
-    await _isar.writeTxn(
+    await _isar?.writeTxn(
       () async {
         for (final e in result[0]) {
           final user = AppUserId()
@@ -107,7 +106,7 @@ class ServerAppLoadController extends GetxController {
             ..time = DateTime.parse(e.data['time'])
             ..isSynced = true
             ..appLoad.value = object;
-          await _isar.appUserIds.put(user);
+          await _isar?.appUserIds.put(user);
           await user.appLoad.save();
         }
 
@@ -118,7 +117,7 @@ class ServerAppLoadController extends GetxController {
             ..title = e.data['title']
             ..isSynced = true
             ..appLoad.value = object;
-          await _isar.appSentryIds.put(sentry);
+          await _isar?.appSentryIds.put(sentry);
           await sentry.appLoad.save();
         }
       },
@@ -130,7 +129,7 @@ class ServerAppLoadController extends GetxController {
       if (file != null) {
         Isar isar = await createIsarFromPath(file.path);
         List<AppLog> logs = await isar.appLogs.buildQuery<AppLog>().findAll();
-        await _isar.writeTxn(() async {
+        await _isar?.writeTxn(() async {
           for (final e in logs) {
             final log = AppLog()
               ..level = e.level
@@ -138,7 +137,7 @@ class ServerAppLoadController extends GetxController {
               ..time = e.time
               ..isSynced = true
               ..appLoad.value = object;
-            await _isar.appLogs.put(log);
+            await _isar?.appLogs.put(log);
             await log.appLoad.save();
           }
         });
@@ -154,21 +153,15 @@ class ServerAppLoadController extends GetxController {
 
   Future<void> _clearIasrAllTable() async {
     /// 移除数据库之前的数据
-    await _isar.writeTxn(() async {
-      _isar.appLoads.clear();
-      _isar.appUserIds.clear();
-      _isar.appSentryIds.clear();
-      _isar.appLogs.clear();
+    await _isar?.writeTxn(() async {
+      _isar?.appLoads.clear();
+      _isar?.appUserIds.clear();
+      _isar?.appSentryIds.clear();
+      _isar?.appLogs.clear();
     });
   }
 
   logout() {}
-
-  @override
-  Future<void> onClose() async {
-    await _isar.close();
-    super.onClose();
-  }
 }
 
 enum ServerAppLoadKey {

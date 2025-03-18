@@ -88,7 +88,10 @@ class ServerAppLoadView extends GetView<ServerAppLoadController> {
           title: Text('${getLocalDisplayTime(object.time)}(${object.id})'),
           subtitle: Text(object.deviceId),
           onTap: () {
-            controller.toAppLoadDetail(object);
+            controller.toAppLoadDetail(object).catchError((e) {
+              hideHUD();
+              showToast(e.toString());
+            });
           },
         );
       },

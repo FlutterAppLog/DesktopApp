@@ -81,5 +81,6 @@ class HomeController extends GetxController
       showToast(e.message);
       return true;
     });
+    update();
   }
 }

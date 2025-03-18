@@ -46,27 +46,22 @@ class HomeView extends GetView<HomeController> {
       child: Column(
         children: [
           TextField(
-            decoration: const InputDecoration(labelText: '请输入本地日志路径'),
+            decoration: const InputDecoration(labelText: '请输入本地(.isar)日志路径'),
             controller: controller.localLogPathController,
             onChanged: (text) {},
           ),
-          // TextField(
-          //   decoration: const InputDecoration(labelText: '请输入本地日志密码'),
-          //   controller: controller.logPasswordController,
-          //   onChanged: (text) {},
-          // ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
                 ElevatedButton(
-                  child: const Text('打开日志文件'),
-                  onPressed: () => controller.openLogFile(),
+                  child: const Text('选取日志文件'),
+                  onPressed: () => controller.selectLogFile(),
                 ),
                 const SizedBox(width: 10),
                 ElevatedButton(
-                  child: const Text('选取日志文件'),
-                  onPressed: () => controller.selectLogFile(),
+                  child: const Text('打开日志文件'),
+                  onPressed: () => controller.openLogFile(),
                 ),
               ],
             ),
@@ -111,6 +106,7 @@ class HomeView extends GetView<HomeController> {
             labelText: '请输入密码',
           ),
           controller: controller.passwordController,
+          obscureText: true,
         ),
         ElevatedButton(
           onPressed: () => controller.login(),

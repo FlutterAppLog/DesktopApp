@@ -72,7 +72,25 @@ class AppwriteClient extends GetxService {
               Query.equal('userId', userId),
             ])
         .then((e) => _getAppLoadDocuments(e.documents))
-        .catchError((e) => <Document>[]);
+        .catchError((e) {
+          showToast(e.toString());
+          return <Document>[];
+        });
+  }
+
+  /// 通过AppLoadId查询AppLoad表
+  Future<Document?> queryAppLoadById(String appLoadId) async {
+    return Databases(client)
+        .getDocument(
+          databaseId: databaseId,
+          collectionId: appLoadTableId,
+          documentId: appLoadId,
+        )
+        .then<Document?>((e) => e)
+        .catchError((e) {
+      showToast(e.toString());
+      return null;
+    });
   }
 
   /// 根据SentryId 查询APP启动
@@ -101,12 +119,12 @@ class AppwriteClient extends GetxService {
         .catchError((e) => <Document>[]);
   }
 
-  List<Document> _getAppLoadDocuments(List<Document> documents) {
+  Future<List<Document>> _getAppLoadDocuments(List<Document> documents) async {
     final List<Document> result = [];
     for (var e in documents) {
-      final Document appLoad = Document.fromMap(e.data['appLoad']);
-      final exit = result.where((e) => e.$id == appLoad.$id).isNotEmpty;
-      if (!exit) {
+      final appLoadId = e.data['appLoadId'];
+      final appLoad = await queryAppLoadById(appLoadId);
+      if (appLoad != null) {
         result.add(appLoad);
       }
     }
@@ -156,6 +174,11 @@ class AppwriteClient extends GetxService {
 
   /// 下载日志文件
   Future<File?> downloadFile(String fileId) async {
+    final fileInfo =
+        await Storage(client).getFile(bucketId: storageId, fileId: fileId);
+    if (fileInfo.mimeType == 'application/zip') {
+      throw Exception('当前版本不支持打开新的日志文件!');
+    }
     return Storage(client)
         .getFileDownload(
       bucketId: storageId,
