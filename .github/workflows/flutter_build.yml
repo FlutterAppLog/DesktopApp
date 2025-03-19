@@ -1,14 +1,64 @@
-name: Flutter CI
+name: Build and Release Flutter macOS and Windows Apps
 
 on:
   push:
     tags:
-      - "*"
+      - "v*"
 
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: macos-latest
+
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "stable"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS app
+        run: flutter build macos --release
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: macos-app
+          path: build/macos/Build/Products/Release/*.app
+
+      - name: Build Windows app
+        run: flutter build windows --release
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-app
+          path: build/windows/runner/Release/*.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: macos-app
+          path: macos-app
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: windows-app
+          path: windows-app
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -19,85 +69,23 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
 
-  build-and-release-windows:
-    runs-on: windows-latest
-    needs: create-release
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: "stable"
-          architecture: x64
-          flutter-version: "3.24.5"
-      - name: Install project dependencies
-        run: flutter pub get
-      - name: Generate intermediates
-        run: flutter pub run build_runner build --delete-conflicting-outputs
-      - name: Enable windows build
-        run: flutter config --enable-windows-desktop
-      - name: Build artifacts
-        run: flutter build windows --release
-      - name: Compress Windows artifacts
-        run: Compress-Archive -Path build/windows/runner/Release/flutter_app_log_desktop_app.exe -DestinationPath build/windows/runner/Release/BuildWinnerApp-${{ github.ref_name }}-windows.zip
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: BuildWinnerApp-${{ github.ref_name }}-windows.zip
-          path: build/windows/runner/Release/BuildWinnerApp-${{ github.ref_name }}-windows.zip
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: BuildWinnerApp-${{ github.ref_name }}-windows.zip
-          path: artifacts
-      - name: Upload Windows Release Assets
+      - name: Upload macOS artifact to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: artifacts/BuildWinnerApp-${{ github.ref_name }}-windows.zip
-          asset_name: BuildWinnerApp-${{ github.ref_name }}-windows.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: macos-app/*.app
+          asset_name: macos-app.zip
           asset_content_type: application/zip
 
-  build-and-release-macos:
-    runs-on: macos-latest
-    needs: create-release
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: "stable"
-          architecture: x64
-          flutter-version: "3.24.5"
-      - name: Install project dependencies
-        run: flutter pub get
-      - name: Generate intermediates
-        run: flutter pub run build_runner build --delete-conflicting-outputs
-      - name: Enable macOS build
-        run: flutter config --enable-macos-desktop
-      - name: Build artifacts
-        run: flutter build macos --release
-      - name: Compress macOS artifacts
-        run: zip -r build/macos/Build/Products/Release/BuildWinnerApp-${{ github.ref_name }}-macos.zip build/macos/Build/Products/Release/BuildWinnerApp.app
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: BuildWinnerApp-${{ github.ref_name }}-macos.zip
-          path: build/macos/Build/Products/Release/BuildWinnerApp-${{ github.ref_name }}-macos.zip
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: BuildWinnerApp-${{ github.ref_name }}-macos.zip
-          path: artifacts
-      - name: Upload macOS Release Assets
+      - name: Upload Windows artifact to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: artifacts/BuildWinnerApp-${{ github.ref_name }}-macos.zip
-          asset_name: BuildWinnerApp-${{ github.ref_name }}-macos.zip
-          asset_content_type: application/zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: windows-app/*.exe
+          asset_name: windows-app.exe
+          asset_content_type: application/octet-stream
