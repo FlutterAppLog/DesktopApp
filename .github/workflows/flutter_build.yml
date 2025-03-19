@@ -26,11 +26,12 @@ jobs:
         run: flutter config --enable-windows-desktop
       - name: Build artifacts
         run: flutter build windows --release
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: BuildWinnerApp-${{github.ref_name}}-windows.zip
-          path: build/windows/x64/runner/Release/BuildWinnerApp-${{github.ref_name}}-windows.zip
+          path: build/windows/runner/Release/flutter_app_log_desktop_app.exe
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -51,9 +52,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/BuildWinnerApp-${{github.ref_name}}-windows.zip
+          asset_path: artifacts/flutter_app_log_desktop_app.exe
           asset_name: BuildWinnerApp-${{github.ref_name}}-windows.zip
           asset_content_type: application/octet-stream
+
   build-and-release-macos:
     runs-on: macos-latest
 
@@ -76,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: BuildWinnerApp-${{github.ref_name}}-macos.zip
-          path: build/macos/Build/Products/Release/BuildWinnerApp-${{github.ref_name}}-macos.zip
+          path: build/macos/Build/Products/Release/BuildWinnerApp.app
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -97,6 +99,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/BuildWinnerApp-${{github.ref_name}}-macos.zip
+          asset_path: artifacts/BuildWinnerApp.app
           asset_name: BuildWinnerApp-${{github.ref_name}}-macos.zip
           asset_content_type: application/octet-stream
