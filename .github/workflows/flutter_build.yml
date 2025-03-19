@@ -35,8 +35,6 @@ jobs:
       - name: Windows Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: build/windows/x64/runner/Release/BuildWinnerApp-${{github.ref_name}}-windows.zip
 
@@ -67,7 +65,5 @@ jobs:
       - name: macOS Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: build/macos/x64/Build/Products/Release/BuildWinnerApp-${{github.ref_name}}-macos.zip
