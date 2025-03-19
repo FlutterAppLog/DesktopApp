@@ -2,15 +2,29 @@ name: Flutter CI
 
 on:
   push:
-    # branches:
-    #   - "main"
     tags:
       - "*"
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+
   build-and-release-windows:
     runs-on: windows-latest
-
+    needs: create-release
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -26,39 +40,31 @@ jobs:
         run: flutter config --enable-windows-desktop
       - name: Build artifacts
         run: flutter build windows --release
-
+      - name: Compress Windows artifacts
+        run: Compress-Archive -Path build/windows/runner/Release/flutter_app_log_desktop_app.exe -DestinationPath build/windows/runner/Release/BuildWinnerApp-${{ github.ref_name }}-windows.zip
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BuildWinnerApp-${{github.ref_name}}-windows.zip
-          path: build/windows/runner/Release/flutter_app_log_desktop_app.exe
+          name: BuildWinnerApp-${{ github.ref_name }}-windows.zip
+          path: build/windows/runner/Release/BuildWinnerApp-${{ github.ref_name }}-windows.zip
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
+          name: BuildWinnerApp-${{ github.ref_name }}-windows.zip
           path: artifacts
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
       - name: Upload Windows Release Assets
-        uses: actions/upload-release-asset@v2
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/flutter_app_log_desktop_app.exe
-          asset_name: BuildWinnerApp-${{github.ref_name}}-windows.zip
-          asset_content_type: application/octet-stream
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: artifacts/BuildWinnerApp-${{ github.ref_name }}-windows.zip
+          asset_name: BuildWinnerApp-${{ github.ref_name }}-windows.zip
+          asset_content_type: application/zip
 
   build-and-release-macos:
     runs-on: macos-latest
-
+    needs: create-release
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -74,31 +80,24 @@ jobs:
         run: flutter config --enable-macos-desktop
       - name: Build artifacts
         run: flutter build macos --release
+      - name: Compress macOS artifacts
+        run: zip -r build/macos/Build/Products/Release/BuildWinnerApp-${{ github.ref_name }}-macos.zip build/macos/Build/Products/Release/BuildWinnerApp.app
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BuildWinnerApp-${{github.ref_name}}-macos.zip
-          path: build/macos/Build/Products/Release/BuildWinnerApp.app
+          name: BuildWinnerApp-${{ github.ref_name }}-macos.zip
+          path: build/macos/Build/Products/Release/BuildWinnerApp-${{ github.ref_name }}-macos.zip
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
+          name: BuildWinnerApp-${{ github.ref_name }}-macos.zip
           path: artifacts
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
       - name: Upload macOS Release Assets
-        uses: actions/upload-release-asset@v2
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/BuildWinnerApp.app
-          asset_name: BuildWinnerApp-${{github.ref_name}}-macos.zip
-          asset_content_type: application/octet-stream
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: artifacts/BuildWinnerApp-${{ github.ref_name }}-macos.zip
+          asset_name: BuildWinnerApp-${{ github.ref_name }}-macos.zip
+          asset_content_type: application/zip
