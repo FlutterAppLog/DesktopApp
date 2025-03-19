@@ -19,7 +19,7 @@ class AppLoadView extends GetView<AppLoadController> {
           objects: controller.appLoads,
           itemBuilder: (context, object) {
             return ListTile(
-              title: Text('${getLocalDisplayTime(object.time)}(${object.id})'),
+              title: Text(getLocalDisplayTime(object.time)),
               subtitle: Text(object.deviceId),
               onTap: () {
                 controller.toAppLoadDetail(object);

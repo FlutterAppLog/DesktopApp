@@ -1,14 +1,11 @@
-import 'dart:developer';
-
 import 'package:appwrite/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_log_desktop_app/app/routes/app_pages.dart';
 import 'package:flutter_app_log_desktop_app/app_log/app_log.dart';
 import 'package:flutter_app_log_desktop_app/commons/functions.dart';
 import 'package:flutter_app_log_desktop_app/utils/appwrite_client.dart';
+import 'package:flutter_app_log_desktop_app/utils/log_zip_manager.dart';
 import 'package:get/get.dart';
-import 'package:isar/isar.dart';
-import 'package:path_provider/path_provider.dart';
 
 class ServerAppLoadController extends GetxController {
   /// 当前选中的搜索类型
@@ -22,15 +19,8 @@ class ServerAppLoadController extends GetxController {
   /// 当前查询出来的App启动事件
   final appLoads = Rxn<List<AppLoad>>();
 
-  Isar? _isar;
-
   /// 进行搜索
   search() async {
-    if (_isar != null) {
-      _isar?.close();
-      _isar = null;
-    }
-    _isar = await createDefaultIsar();
     final key = searchKey.value;
     final searchText = searchController.text;
     if (searchText.isEmpty) {
@@ -53,111 +43,52 @@ class ServerAppLoadController extends GetxController {
     if (documents.isEmpty) {
       return;
     }
-
-    _clearIasrAllTable();
-
-    List<AppLoad> appLoads = documents.map((e) {
-      return AppLoad()
-        ..appwriteId = e.$id
-        ..time = DateTime.parse(e.data['time'])
-        ..deviceId = e.data['deviceId']
-        ..environment = e.data['environment']
-        ..isSynced = true
-        ..isStoreVersion = e.data['isStoreVersion'];
-    }).toList();
-
-    /// 写入数据
-    await _isar?.writeTxn(() async {
-      await _isar?.appLoads.putAll(appLoads);
-    });
-    this.appLoads.value = appLoads;
-    update();
+    appLoads.value = documents
+        .map((e) => AppLoad(
+              appLoadId: e.$id,
+              time: DateTime.parse(e.data['time']),
+              deviceId: e.data['deviceId'],
+              environment: e.data['environment'],
+              isStoreVersion: e.data['isStoreVersion'],
+            ))
+        .toList();
   }
 
   /// 新建配置
   newConfig() {}
 
   Future<void> toAppLoadDetail(AppLoad object) async {
-    /// 查询当前关联的启动数据到本地
-    showHUD('正在同步数据到本地');
-
-    /// 移除数据库之前的数据
-    await _isar?.writeTxn(() async {
-      await _isar?.appSentryIds.clear();
-      await _isar?.appUserIds.clear();
-      await _isar?.appLogs.clear();
-    });
-    final userIds = _appwriteClient.queryUserByAppLoad(object.appwriteId);
-    final logs = _appwriteClient.queryLogsByAppLoad(object.appwriteId);
-    final sentries = _appwriteClient.querySentryByAppLoad(object.appwriteId);
-    List<List<Document>> result =
-        await Future.wait<List<Document>>([userIds, logs, sentries])
-            .catchError((e) {
-      hideHUD();
-      showToast(e.toString());
-      throw e;
-    });
-
-    await _isar?.writeTxn(
-      () async {
-        for (final e in result[0]) {
-          final user = AppUserId()
-            ..userId = e.data['userId']
-            ..time = DateTime.parse(e.data['time'])
-            ..isSynced = true
-            ..appLoad.value = object;
-          await _isar?.appUserIds.put(user);
-          await user.appLoad.save();
-        }
-
-        for (final e in result[2]) {
-          final sentry = AppSentryId()
-            ..sentryId = e.data['sentryId']
-            ..time = DateTime.parse(e.data['time'])
-            ..title = e.data['title']
-            ..isSynced = true
-            ..appLoad.value = object;
-          await _isar?.appSentryIds.put(sentry);
-          await sentry.appLoad.save();
-        }
-      },
-    );
-
-    for (var e in result[1]) {
-      final realmId = e.data['realmId'];
-      final file = await _appwriteClient.downloadFile(realmId);
-      if (file != null) {
-        Isar isar = await createIsarFromPath(file.path);
-        List<AppLog> logs = await isar.appLogs.buildQuery<AppLog>().findAll();
-        await _isar?.writeTxn(() async {
-          for (final e in logs) {
-            final log = AppLog()
-              ..level = e.level
-              ..message = e.message
-              ..time = e.time
-              ..isSynced = true
-              ..appLoad.value = object;
-            await _isar?.appLogs.put(log);
-            await log.appLoad.save();
-          }
-        });
-        await isar.close();
-      }
+    final users = await _appwriteClient.queryUserByAppLoad(object.appLoadId);
+    final sentrys =
+        await _appwriteClient.querySentryByAppLoad(object.appLoadId);
+    final logs = await _appwriteClient.queryLogsByAppLoad(object.appLoadId);
+    LogZipManager logZipManager = LogZipManager();
+    await logZipManager.clear();
+    for (var i = 0; i < logs.length; i++) {
+      final log = logs[i];
+      final fileId = log.data['realmId'];
+      final bytes = await _appwriteClient.downloadFile(fileId);
+      final fileName = '$fileId.zip';
+      await logZipManager.writeZip(bytes, fileName);
     }
-    hideHUD();
     Get.toNamed(Routes.LOG_DETAIL, arguments: {
-      'appLoad': object,
-      'isar': _isar,
-    });
-  }
-
-  Future<void> _clearIasrAllTable() async {
-    /// 移除数据库之前的数据
-    await _isar?.writeTxn(() async {
-      _isar?.appLoads.clear();
-      _isar?.appUserIds.clear();
-      _isar?.appSentryIds.clear();
-      _isar?.appLogs.clear();
+      'users': users
+          .map(
+            (e) => AppUserId(
+              userId: e.data['userId'],
+              time: DateTime.parse(e.data['time']),
+            ),
+          )
+          .toList(),
+      'sentrys': sentrys
+          .map(
+            (e) => AppSentryId(
+              sentryId: e.data['sentryId'],
+              title: e.data['title'],
+              time: DateTime.parse(e.data['time']),
+            ),
+          )
+          .toList(),
     });
   }
 

@@ -85,10 +85,14 @@ class ServerAppLoadView extends GetView<ServerAppLoadController> {
       objects: appLoads,
       itemBuilder: (context, object) {
         return ListTile(
-          title: Text('${getLocalDisplayTime(object.time)}(${object.id})'),
-          subtitle: Text(object.deviceId),
+          title: Text(getLocalDisplayTime(object.time)),
+          subtitle: Text(
+              '[${object.environment}][${object.isStoreVersion ? '正式' : '测试'}][${object.deviceId}]'),
           onTap: () {
-            controller.toAppLoadDetail(object).catchError((e) {
+            showHUD('解析日志文件...');
+            controller.toAppLoadDetail(object).then((e) {
+              hideHUD();
+            }).catchError((e) {
               hideHUD();
               showToast(e.toString());
             });

@@ -86,25 +86,23 @@ class LogDetailView extends GetView<LogDetailController> {
 
   /// 日志
   Widget _buildLogWidget() {
-    return GetBuilder<LogDetailController>(builder: (controller) {
-      return SearchListView<AppLog>(
-        hintText: '搜索日志(${controller.appLogs.length}条)',
-        objects: controller.appLogs,
-        itemBuilder: (context, object) {
-          final textColor = controller.getLogColor(object.level);
+    return Obx(() => SearchListView<AppLog>(
+          hintText: '搜索日志(${controller.appLogs.length}条)',
+          objects: controller.appLogs,
+          itemBuilder: (context, object) {
+            final textColor = controller.getLogColor(object.level);
 
-          return ListTile(
-            title: Text(
-              getLocalDisplayTime(object.time),
-              style: const TextStyle(color: Colors.grey, fontSize: 10),
-            ),
-            subtitle: Text(
-              object.message,
-              style: TextStyle(color: textColor, fontSize: 14),
-            ),
-          );
-        },
-      );
-    });
+            return ListTile(
+              title: Text(
+                getLocalDisplayTime(object.time),
+                style: const TextStyle(color: Colors.grey, fontSize: 10),
+              ),
+              subtitle: Text(
+                object.message,
+                style: TextStyle(color: textColor, fontSize: 14),
+              ),
+            );
+          },
+        ));
   }
 }

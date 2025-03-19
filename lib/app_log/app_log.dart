@@ -1,37 +1,31 @@
-import 'package:isar/isar.dart';
-part 'app_log.g.dart';
-
 /// App启动
-@Collection()
 class AppLoad {
-  /// ISAR 数据库ID
-  Id id = Isar.autoIncrement;
-
-  /// 存储在Appwrite的数据库ID
-  late String appwriteId;
+  /// App启动ID
+  final String appLoadId;
 
   /// App启动时间
-  late DateTime time;
+  final DateTime time;
 
   /// 设备的唯一ID
-  late String deviceId;
+  final String deviceId;
 
   /// 当前日志环境
-  late String environment;
+  final String environment;
 
   /// 是否是市场版本
-  late bool isStoreVersion;
+  final bool isStoreVersion;
 
-  /// 是否同步
-  late bool isSynced;
+  const AppLoad({
+    required this.appLoadId,
+    required this.time,
+    required this.deviceId,
+    required this.environment,
+    required this.isStoreVersion,
+  });
 }
 
 /// App日志
-@Collection()
 class AppLog {
-  /// ISAR 数据库ID
-  Id id = Isar.autoIncrement;
-
   /// 日志类型
   late String level;
 
@@ -40,47 +34,34 @@ class AppLog {
 
   /// 日志时间
   late DateTime time;
-
-  /// 是否已经同步到服务器
-  late bool isSynced;
-
-  /// App启动日志
-  final appLoad = IsarLink<AppLoad>();
 }
 
-@Collection()
 class AppSentryId {
-  Id id = Isar.autoIncrement;
-
   /// Sentry的ID
-  late String sentryId;
+  final String sentryId;
 
   /// 标题
-  late String title;
-
-  /// App启动日志
-  final appLoad = IsarLink<AppLoad>();
+  final String title;
 
   /// 时间
-  late DateTime time;
+  final DateTime time;
 
-  /// 是否已经同步
-  late bool isSynced;
+  const AppSentryId({
+    required this.sentryId,
+    required this.title,
+    required this.time,
+  });
 }
 
-@Collection()
 class AppUserId {
-  Id id = Isar.autoIncrement;
-
   /// 用户ID
-  late String userId;
-
-  /// App启动日志
-  final appLoad = IsarLink<AppLoad>();
+  final String userId;
 
   /// 时间
-  late DateTime time;
+  final DateTime time;
 
-  /// 是否已经同步
-  late bool isSynced;
+  const AppUserId({
+    required this.userId,
+    required this.time,
+  });
 }

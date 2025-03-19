@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -7,7 +8,9 @@ import 'package:flutter_app_log_desktop_app/app/modules/server_app_load/controll
 import 'package:flutter_app_log_desktop_app/app/routes/app_pages.dart';
 import 'package:flutter_app_log_desktop_app/commons/functions.dart';
 import 'package:flutter_app_log_desktop_app/utils/appwrite_client.dart';
+import 'package:flutter_app_log_desktop_app/utils/log_zip_manager.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart';
 
 class HomeController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -41,7 +44,7 @@ class HomeController extends GetxController
   Future<void> selectLogFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['isar'],
+      allowedExtensions: ['zip'],
     );
     if (result == null) {
       return;
@@ -49,10 +52,18 @@ class HomeController extends GetxController
     localLogPathController.text = result.files.first.path!;
   }
 
-  openLogFile() {
-    Get.toNamed(Routes.APP_LOAD, arguments: {
-      'path': localLogPathController.text,
-    });
+  openLogFile() async {
+    final path = localLogPathController.text;
+    final extensionName = extension(path);
+    if (extensionName != '.zip') {
+      showToast('请选择正确的日志文件');
+      return;
+    }
+    LogZipManager logZipManager = LogZipManager();
+    await logZipManager.clear();
+    final bytes = await File(path).readAsBytes();
+    await logZipManager.writeZip(bytes, basename(path));
+    Get.toNamed(Routes.LOG_DETAIL);
   }
 
   login() async {

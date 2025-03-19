@@ -59,7 +59,10 @@ class AppwriteClient extends GetxService {
               Query.equal('deviceId', deviceId),
             ])
         .then((e) => e.documents)
-        .catchError((e) => <Document>[]);
+        .catchError((e) {
+          showToast(e.toString());
+          return <Document>[];
+        });
   }
 
   /// 根据用户ID查询App启动
@@ -173,29 +176,18 @@ class AppwriteClient extends GetxService {
   }
 
   /// 下载日志文件
-  Future<File?> downloadFile(String fileId) async {
-    final fileInfo =
-        await Storage(client).getFile(bucketId: storageId, fileId: fileId);
-    if (fileInfo.mimeType == 'application/zip') {
-      throw Exception('当前版本不支持打开新的日志文件!');
-    }
-    return Storage(client)
-        .getFileDownload(
+  Future<Uint8List> downloadFile(String fileId) async {
+    final fileInfo = await Storage(client).getFile(
       bucketId: storageId,
       fileId: fileId,
-    )
-        .then<File?>((e) async {
-      final realmPath = await getApplicationDocumentsDirectory()
-          .then((e) => join(e.path, fileId, '$fileId.isar'));
-      final file = File(realmPath);
-      if (!file.existsSync()) {
-        await file.create(recursive: true);
-      }
-      await file.writeAsBytes(e);
-      return file;
-    }).catchError((e) {
-      return Future.value(null);
-    });
+    );
+    if (fileInfo.mimeType != 'application/zip') {
+      throw Exception('请使用v0.1.x版本打开当前的日志！');
+    }
+    return await Storage(client).getFileDownload(
+      bucketId: storageId,
+      fileId: fileId,
+    );
   }
 
   Future<void> logout() async {

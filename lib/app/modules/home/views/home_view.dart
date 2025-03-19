@@ -46,7 +46,7 @@ class HomeView extends GetView<HomeController> {
       child: Column(
         children: [
           TextField(
-            decoration: const InputDecoration(labelText: '请输入本地(.isar)日志路径'),
+            decoration: const InputDecoration(labelText: '请输入本地(.zip)日志路径'),
             controller: controller.localLogPathController,
             onChanged: (text) {},
           ),

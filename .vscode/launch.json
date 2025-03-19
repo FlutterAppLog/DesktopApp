@@ -13,16 +13,13 @@
             ]
         },
         {
-            "name": "flutter_app_log_desktop_app (profile mode)",
+            "name": "解析日志",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "flutter_app_log_desktop_app (release mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
+            "program": "bin/app.dart",
+            "args": [
+                "/Users/king/Downloads/log",
+            ]
         }
     ]
 }
