@@ -51,13 +51,13 @@ jobs:
         run: flutter build windows --release
 
       - name: Compress Windows app
-        run: Compress-Archive -Path build/windows/runner/Release/flutter_app_log_desktop_app.exe -DestinationPath build/windows/runner/Release/flutter_app_log_desktop_app-windows.zip
+        run: Compress-Archive -Path build/windows/x64/runner/Release/flutter_app_log_desktop_app.exe -DestinationPath build/windows/x64/runner/Release/flutter_app_log_desktop_app-windows.zip
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-artifact
-          path: build/windows/runner/Release/flutter_app_log_desktop_app-windows.zip
+          path: build/windows/x64/runner/Release/flutter_app_log_desktop_app-windows.zip
 
   create-release:
     runs-on: ubuntu-latest
