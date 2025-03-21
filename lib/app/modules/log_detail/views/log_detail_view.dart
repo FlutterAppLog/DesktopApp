@@ -66,6 +66,9 @@ class LogDetailView extends GetView<LogDetailController> {
             ),
           );
         },
+        onFilter: (sentry, value) {
+          return sentry.sentryId.contains(value);
+        },
       );
     });
   }
@@ -74,35 +77,44 @@ class LogDetailView extends GetView<LogDetailController> {
   Widget _buildUserIdWidget() {
     return GetBuilder<LogDetailController>(builder: (controller) {
       return SearchListView<AppUserId>(
-          objects: controller.appUsers,
-          itemBuilder: (context, object) {
-            return ListTile(
-              title: Text(getLocalDisplayTime(object.time)),
-              subtitle: Text(object.userId),
-            );
-          });
+        objects: controller.appUsers,
+        itemBuilder: (context, object) {
+          return ListTile(
+            title: Text(getLocalDisplayTime(object.time)),
+            subtitle: Text(object.userId),
+          );
+        },
+        onFilter: (user, value) {
+          return user.userId.contains(value);
+        },
+      );
     });
   }
 
   /// 日志
   Widget _buildLogWidget() {
-    return Obx(() => SearchListView<AppLog>(
-          hintText: '搜索日志(${controller.appLogs.length}条)',
-          objects: controller.appLogs,
-          itemBuilder: (context, object) {
-            final textColor = controller.getLogColor(object.level);
+    return Obx(
+      () => SearchListView<AppLog>(
+        hintText: '搜索日志(${controller.appLogs.length}条)',
+        objects: controller.appLogs,
+        itemBuilder: (context, object) {
+          final textColor = controller.getLogColor(object.level);
 
-            return ListTile(
-              title: Text(
-                getLocalDisplayTime(object.time),
-                style: const TextStyle(color: Colors.grey, fontSize: 10),
-              ),
-              subtitle: Text(
-                object.message,
-                style: TextStyle(color: textColor, fontSize: 14),
-              ),
-            );
-          },
-        ));
+          return ListTile(
+            title: Text(
+              getLocalDisplayTime(object.time),
+              style: const TextStyle(color: Colors.grey, fontSize: 10),
+            ),
+            subtitle: Text(
+              object.message,
+              style: TextStyle(color: textColor, fontSize: 14),
+            ),
+          );
+        },
+        onFilter: (log, value) {
+          return log.message.contains(value);
+        },
+      ),
+    );
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class SearchListView<T> extends StatefulWidget {
   final List<T> objects;
-  final bool Function(T object)? onFilter;
+  final bool Function(T object, String value)? onFilter;
   final Widget Function(BuildContext context, T object) itemBuilder;
   final String hintText;
   const SearchListView({
@@ -30,7 +30,6 @@ class _SearchListViewState<T> extends State<SearchListView<T>> {
   @override
   void didUpdateWidget(covariant SearchListView<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-
     _filter(_controller.text);
   }
 
@@ -44,6 +43,9 @@ class _SearchListViewState<T> extends State<SearchListView<T>> {
           ),
           controller: _controller,
           onSubmitted: (value) {
+            _filter(value);
+          },
+          onChanged: (value) {
             _filter(value);
           },
         ),
@@ -66,7 +68,7 @@ class _SearchListViewState<T> extends State<SearchListView<T>> {
         if (widget.onFilter == null || value.isEmpty) {
           return true;
         }
-        return widget.onFilter!(element);
+        return widget.onFilter!(element, value);
       }).toList();
     });
   }
