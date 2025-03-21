@@ -184,7 +184,7 @@ class AppwriteClient extends GetxService {
     if (fileInfo.mimeType != 'application/zip') {
       throw Exception('请使用v0.1.x版本打开当前的日志！');
     }
-    return await Storage(client).getFileDownload(
+    return await Storage(client).getFileView(
       bucketId: storageId,
       fileId: fileId,
     );

@@ -28,58 +28,16 @@ class LogDetailController extends GetxController
   void onInit() {
     super.onInit();
     tabController = TabController(length: 3, vsync: this);
+    appLogs.value = JSON(Get.arguments)['appLogs'].rawValue ?? [];
     appUsers.value = JSON(Get.arguments)['users'].rawValue ?? [];
     appSentryIds.value = JSON(Get.arguments)['sentrys'].rawValue ?? [];
-    showHUD('解析日志文件...');
-    parseLogFile().then((e) {
-      hideHUD();
-    }).catchError((e) {
-      showToast(e.toString());
-      hideHUD();
-    });
+    
   }
 
-  /// 解析日志文件
-  Future<void> parseLogFile() async {
-    final logDir = await getLogDir();
-    print('logDir: ${logDir.path}');
-    final tempLogDir = Directory(join(logDir.path, 'temp'));
-    if (await tempLogDir.exists()) {
-      await tempLogDir.delete(recursive: true);
-    }
-    await tempLogDir.create(recursive: true);
-    final logZipManager = LogZipManager();
-    final zipFiles = await logZipManager.getZipFiles();
-    for (var i = 0; i < zipFiles.length; i++) {
-      final zipFile = zipFiles[i];
-      final bytes = await zipFile.readAsBytes();
-      await logZipManager.writeZip(bytes, basename(zipFile.path));
-      if (!await unzipFile(zipFile.path, tempLogDir.path)) {
-        throw Exception('日志解压失败!');
-      }
-    }
-
-    appLogs.value = await getAppLogsFromLogDir(tempLogDir);
-  }
+  
 
   loadData(int index) async {
-    if (index == 0) {
-      // appLogs.value = await _isar.appLogs
-      //     .filter()
-      //     .appLoad((e) => e.idEqualTo(_appLoad.id))
-      //     .findAll();
-    } else if (index == 1) {
-      // appUsers.value = await _isar.appUserIds
-      //     .filter()
-      //     .appLoad((e) => e.idEqualTo(_appLoad.id))
-      //     .findAll();
-    } else if (index == 2) {
-      // appSentryIds.value = await _isar.appSentryIds
-      //     .filter()
-      //     .appLoad((e) => e.idEqualTo(_appLoad.id))
-      //     .findAll();
-    }
-    update();
+
   }
 
   Color getLogColor(String level) {
@@ -89,30 +47,4 @@ class LogDetailController extends GetxController
         Colors.black;
   }
 
-  Future<bool> unzipFile(
-      String zipFilePath, String destinationDirectory) async {
-    try {
-      // 读取 ZIP 文件的内容
-      final bytes = File(zipFilePath).readAsBytesSync();
-
-      // 解码 ZIP 文件
-      final archive = ZipDecoder().decodeBytes(bytes);
-
-      // 遍历 ZIP 文件中的每个文件
-      for (final file in archive) {
-        final filePath = join(destinationDirectory, basename(file.name));
-        if (file.isFile) {
-          final outputFile = File(filePath);
-          if (!await outputFile.exists()) {
-            await outputFile.create(recursive: true);
-          }
-          await outputFile.writeAsBytes(file.readBytes()!);
-        }
-      }
-      return true;
-    } catch (e) {
-      showToast(e.toString());
-      return false;
-    }
-  }
 }

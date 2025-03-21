@@ -62,14 +62,12 @@ class ServerAppLoadController extends GetxController {
     final sentrys =
         await _appwriteClient.querySentryByAppLoad(object.appLoadId);
     final logs = await _appwriteClient.queryLogsByAppLoad(object.appLoadId);
-    LogZipManager logZipManager = LogZipManager();
-    await logZipManager.clear();
+    final appLogs = <AppLog>[];
     for (var i = 0; i < logs.length; i++) {
       final log = logs[i];
       final fileId = log.data['realmId'];
       final bytes = await _appwriteClient.downloadFile(fileId);
-      final fileName = '$fileId.zip';
-      await logZipManager.writeZip(bytes, fileName);
+      appLogs.addAll(await getAppLogsFromZipBytes(bytes));
     }
     Get.toNamed(Routes.LOG_DETAIL, arguments: {
       'users': users
@@ -89,6 +87,7 @@ class ServerAppLoadController extends GetxController {
             ),
           )
           .toList(),
+      'appLogs': appLogs,
     });
   }
 

@@ -1,8 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_log_desktop_app/app/modules/server_app_load/controllers/server_app_load_controller.dart';
 import 'package:flutter_app_log_desktop_app/app/routes/app_pages.dart';
@@ -30,6 +28,8 @@ class HomeController extends GetxController
 
   final serverAppLoadController = ServerAppLoadController();
 
+  PlatformFile? selectedLogFile;
+
   @override
   Future<void> onInit() async {
     super.onInit();
@@ -49,21 +49,26 @@ class HomeController extends GetxController
     if (result == null) {
       return;
     }
-    localLogPathController.text = result.files.first.path!;
+    selectedLogFile = result.files.first;
+    localLogPathController.text = selectedLogFile!.name;
   }
 
   openLogFile() async {
-    final path = localLogPathController.text;
+    if (selectedLogFile == null) {
+      showToast('请选择日志文件');
+      return;
+    }
+    final path = selectedLogFile!.name;
     final extensionName = extension(path);
     if (extensionName != '.zip') {
       showToast('请选择正确的日志文件');
       return;
     }
-    LogZipManager logZipManager = LogZipManager();
-    await logZipManager.clear();
-    final bytes = await File(path).readAsBytes();
-    await logZipManager.writeZip(bytes, basename(path));
-    Get.toNamed(Routes.LOG_DETAIL);
+    final contents = await unzipFile(selectedLogFile!.bytes!);
+    final appLogs = await getAppLogsFromLogDir(contents);
+    Get.toNamed(Routes.LOG_DETAIL, arguments: {
+      'appLogs': appLogs,
+    });
   }
 
   login() async {

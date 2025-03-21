@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:archive/archive.dart';
 import 'package:flutter_app_log_desktop_app/app_log/app_log.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:intl/intl.dart';
@@ -50,14 +53,10 @@ bool isZipFile(String path) {
 }
 
 /// 解析日志文件
-Future<List<AppLog>> getAppLogsFromLogDir(Directory logDir) async {
+Future<List<AppLog>> getAppLogsFromLogDir(List<String> contents) async {
   final appLogs = <AppLog>[];
-  for (var i = 0; i < 500; i++) {
-    final logFile = File(join(logDir.path, '$i.txt'));
-    if (!await logFile.exists()) {
-      break;
-    }
-    final logLines = await logFile.readAsLines();
+  for (var i = 0; i < contents.length; i++) {
+    final logLines = contents[i].split('\n');
     AppLog? appLog;
     for (final logLine in logLines) {
       RegExp levelMatch = RegExp(r'^\[Level\.([^\]]+)\]');
@@ -101,4 +100,30 @@ Future<void> copyZipsToLogZipDir(List<File> zipFiles) async {
     }
     await zipFile.copy(newZipFile.path);
   }
+}
+
+
+Future<List<String>> unzipFile(Uint8List bytes) async {
+  try {
+    List<String> contents = [];
+    // 解码 ZIP 文件
+    final archive = ZipDecoder().decodeBytes(bytes);
+
+    // 遍历 ZIP 文件中的每个文件
+    for (final file in archive) {
+      if (file.isFile) {
+        final content = utf8.decode(file.content);
+        contents.add(content);
+      }
+    }
+    return contents;
+  } catch (e) {
+    showToast(e.toString());
+    return [];
+  }
+}
+
+Future<List<AppLog>> getAppLogsFromZipBytes(Uint8List bytes) async {
+  final contents = await unzipFile(bytes);
+  return getAppLogsFromLogDir(contents);
 }
