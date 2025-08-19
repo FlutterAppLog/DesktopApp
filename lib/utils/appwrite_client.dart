@@ -57,6 +57,7 @@ class AppwriteClient extends GetxService {
             collectionId: appLoadTableId,
             queries: [
               Query.equal('deviceId', deviceId),
+              Query.orderDesc('\$createdAt'),
             ])
         .then((e) => e.documents)
         .catchError((e) {
@@ -73,6 +74,7 @@ class AppwriteClient extends GetxService {
             collectionId: userTableId,
             queries: [
               Query.equal('userId', userId),
+              Query.orderDesc('\$createdAt'),
             ])
         .then((e) => _getAppLoadDocuments(e.documents))
         .catchError((e) {
@@ -104,6 +106,7 @@ class AppwriteClient extends GetxService {
             collectionId: sentryTableId,
             queries: [
               Query.equal('sentryId', sentryId),
+              Query.orderDesc('\$createdAt'),
             ])
         .then((e) => _getAppLoadDocuments(e.documents))
         .catchError((e) => <Document>[]);
@@ -117,6 +120,7 @@ class AppwriteClient extends GetxService {
             collectionId: sentryTableId,
             queries: [
               Query.equal('title', title),
+              Query.orderDesc('\$createdAt'),
             ])
         .then((e) => _getAppLoadDocuments(e.documents))
         .catchError((e) => <Document>[]);
