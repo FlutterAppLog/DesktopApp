@@ -51,8 +51,8 @@ class LogDetailView extends GetView<LogDetailController> {
 
   /// Sentry ID
   Widget _buildSentryWidget() {
-    return GetBuilder<LogDetailController>(builder: (controller) {
-      return SearchListView<AppSentryId>(
+    return Obx(
+      () => SearchListView<AppSentryId>(
         objects: controller.appSentryIds,
         itemBuilder: (context, object) {
           return ListTile(
@@ -69,14 +69,14 @@ class LogDetailView extends GetView<LogDetailController> {
         onFilter: (sentry, value) {
           return sentry.sentryId.contains(value);
         },
-      );
-    });
+      ),
+    );
   }
 
   /// 用户ID
   Widget _buildUserIdWidget() {
-    return GetBuilder<LogDetailController>(builder: (controller) {
-      return SearchListView<AppUserId>(
+    return Obx(
+      () => SearchListView<AppUserId>(
         objects: controller.appUsers,
         itemBuilder: (context, object) {
           return ListTile(
@@ -87,8 +87,8 @@ class LogDetailView extends GetView<LogDetailController> {
         onFilter: (user, value) {
           return user.userId.contains(value);
         },
-      );
-    });
+      ),
+    );
   }
 
   /// 日志
