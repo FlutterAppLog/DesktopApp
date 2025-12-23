@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_app_log_desktop_app/app/modules/log_detail/controllers/log_detail_controller.dart';
 import 'package:flutter_app_log_desktop_app/app_log/app_log.dart';
 import 'package:flutter_app_log_desktop_app/commons/functions.dart';
@@ -14,6 +15,13 @@ class LogDetailView extends GetView<LogDetailController> {
       appBar: AppBar(
         title: const Text('日志详情'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            tooltip: '下载全部日志',
+            icon: const Icon(Icons.download),
+            onPressed: () => controller.downloadAllLogs(),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -52,69 +60,99 @@ class LogDetailView extends GetView<LogDetailController> {
   /// Sentry ID
   Widget _buildSentryWidget() {
     return Obx(
-      () => SearchListView<AppSentryId>(
-        objects: controller.appSentryIds,
-        itemBuilder: (context, object) {
-          return ListTile(
-            title: Text(
-              getLocalDisplayTime(object.time),
-              style: const TextStyle(color: Colors.grey, fontSize: 10),
-            ),
-            subtitle: Text(
-              '[${object.sentryId}]${object.title}',
-              style: const TextStyle(color: Colors.black, fontSize: 14),
-            ),
-          );
-        },
-        onFilter: (sentry, value) {
-          return sentry.sentryId.contains(value);
-        },
-      ),
+      () {
+        final sentryList = controller.appSentryIds; // 触发响应
+        return SearchListView<AppSentryId>(
+          objects: sentryList.toList(),
+          itemBuilder: (context, object) {
+            return InkWell(
+              onDoubleTap: () async {
+                await Clipboard.setData(
+                    ClipboardData(text: '[${object.sentryId}]${object.title}'));
+                showToast('Sentry 已复制');
+              },
+              child: ListTile(
+                title: Text(
+                  getLocalDisplayTime(object.time),
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                ),
+                subtitle: SelectableText(
+                  '[${object.sentryId}]${object.title}',
+                  style: const TextStyle(color: Colors.black, fontSize: 14),
+                ),
+              ),
+            );
+          },
+          onFilter: (sentry, value) {
+            return sentry.sentryId.contains(value);
+          },
+        );
+      },
     );
   }
 
   /// 用户ID
   Widget _buildUserIdWidget() {
     return Obx(
-      () => SearchListView<AppUserId>(
-        objects: controller.appUsers,
-        itemBuilder: (context, object) {
-          return ListTile(
-            title: Text(getLocalDisplayTime(object.time)),
-            subtitle: Text(object.userId),
-          );
-        },
-        onFilter: (user, value) {
-          return user.userId.contains(value);
-        },
-      ),
+      () {
+        final userList = controller.appUsers; // 触发响应
+        return SearchListView<AppUserId>(
+          objects: userList.toList(),
+          itemBuilder: (context, object) {
+            return InkWell(
+              onDoubleTap: () async {
+                await Clipboard.setData(ClipboardData(text: object.userId));
+                showToast('用户ID已复制');
+              },
+              child: ListTile(
+                title: Text(getLocalDisplayTime(object.time)),
+                subtitle: SelectableText(object.userId),
+              ),
+            );
+          },
+          onFilter: (user, value) {
+            return user.userId.contains(value);
+          },
+        );
+      },
     );
   }
 
   /// 日志
   Widget _buildLogWidget() {
     return Obx(
-      () => SearchListView<AppLog>(
-        hintText: '搜索日志(${controller.appLogs.length}条)',
-        objects: controller.appLogs,
-        itemBuilder: (context, object) {
-          final textColor = controller.getLogColor(object.level);
+      () {
+        final logs = controller.appLogs; // 触发响应
+        final logCount = logs.length; // 显式读取以注册依赖
+        return SearchListView<AppLog>(
+          hintText: '搜索日志($logCount条)',
+          objects: logs.toList(),
+          itemBuilder: (context, object) {
+            final textColor = controller.getLogColor(object.level);
 
-          return ListTile(
-            title: Text(
-              getLocalDisplayTime(object.time),
-              style: const TextStyle(color: Colors.grey, fontSize: 10),
-            ),
-            subtitle: Text(
-              object.message,
-              style: TextStyle(color: textColor, fontSize: 14),
-            ),
-          );
-        },
-        onFilter: (log, value) {
-          return log.message.contains(value);
-        },
-      ),
+            return InkWell(
+              onDoubleTap: () async {
+                // 双击复制整条日志文本，方便快速分享
+                await Clipboard.setData(ClipboardData(text: object.message));
+                showToast('日志已复制');
+              },
+              child: ListTile(
+                title: Text(
+                  getLocalDisplayTime(object.time),
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                ),
+                subtitle: SelectableText(
+                  object.message,
+                  style: TextStyle(color: textColor, fontSize: 14),
+                ),
+              ),
+            );
+          },
+          onFilter: (log, value) {
+            return log.message.contains(value);
+          },
+        );
+      },
     );
   }
 }
